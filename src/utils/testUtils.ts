@@ -9,8 +9,15 @@ export const renderComponent = (
 };
 
 export const checkGridLoaded = (gridElement: HTMLElement): boolean => {
-	const rows = gridElement.querySelectorAll('.ag-row');
-	return rows.length > 0;
+	const rowCount = gridElement.getAttribute('aria-rowcount');
+	if (rowCount !== null) {
+		const parsedRowCount = Number(rowCount);
+		if (!Number.isNaN(parsedRowCount)) {
+			return parsedRowCount > 1;
+		}
+	}
+
+	return gridElement.querySelectorAll('[role="row"][aria-rowindex]').length > 1;
 };
 
 export const checkColumnCount = (
@@ -18,9 +25,20 @@ export const checkColumnCount = (
 	expectedCount: number
 ): boolean => {
 	const columnCount = gridElement.getAttribute('aria-colcount');
-	return Number(columnCount) === expectedCount;
+	if (columnCount === null) {
+		return false;
+	}
+
+	const parsedColumnCount = Number(columnCount);
+	if (Number.isNaN(parsedColumnCount)) {
+		return false;
+	}
+
+	return parsedColumnCount === expectedCount;
 };
 
 export const checkFiltersEnabled = (gridElement: HTMLElement): boolean => {
-	return gridElement.querySelectorAll('.ag-floating-filter').length > 0;
+	return (
+		gridElement.querySelectorAll('input[aria-label$="Filter Input"]').length > 0
+	);
 };

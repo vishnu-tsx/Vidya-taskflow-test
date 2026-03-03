@@ -1,1 +1,17 @@
 @import "tailwindcss";
+
+:root {
+	--ag-cell-text: #374151;
+	--ag-row-female-border: #ec4899;
+	--ag-row-male-border: #3b82f6;
+	--ag-age-under-30-bg: #e8f5e9;
+	--ag-age-under-30-text: #2e7d32;
+	--ag-age-over-60-bg: #fff3e0;
+	--ag-age-over-60-text: #e65100;
+	--ag-age-default-bg: #e3f2fd;
+	--ag-age-default-text: #1565c0;
+	--ag-gender-female-bg: #fce4ec;
+	--ag-gender-female-text: #c2185b;
+	--ag-gender-male-bg: #e3f2fd;
+	--ag-gender-male-text: #1976d2;
+}

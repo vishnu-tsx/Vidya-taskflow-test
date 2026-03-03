@@ -1,115 +1,23 @@
-import type { ColDef, ICellRendererParams } from 'ag-grid-community';
+import type { ColDef } from 'ag-grid-community';
+import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
+import 'ag-grid-community/styles/ag-theme-quartz.css';
+import { SetFilterModule } from 'ag-grid-enterprise';
 import { AgGridReact } from 'ag-grid-react';
 import { useMemo, useState } from 'react';
-import 'ag-grid-community/styles/ag-theme-quartz.css';
-import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-import { SetFilterModule } from 'ag-grid-enterprise';
 import { useAgGridData } from '../hooks/useAgGridData';
-import type { UserProps } from '../models/user.model';
-import { getCellStyle, getRowStyle } from '../utils/gridUtils';
-import type {  } from 'ag-grid-community'
-
+import type { User } from '../models/user.model';
+import { getRowStyle } from '../utils/gridUtils';
+import { USER_COLUMN_DEFS } from './agGridColumnDefs';
 
 ModuleRegistry.registerModules([AllCommunityModule, SetFilterModule]);
 
+const GRID_CONTAINER_STYLE = { height: 550, width: '100%' };
+
 const AgGridDemo = () => {
-	const { data, loading } = useAgGridData();
+	const { rowData, loading, error } = useAgGridData();
 	const [showFilters, setShowFilters] = useState(true);
 
-	const columnDefs: ColDef<UserProps>[] = useMemo(() => {
-		if (data.length === 0) return [];
-
-		return [
-			{
-				field: 'name.first',
-				headerName: 'First Name',
-				filter: 'agTextColumnFilter',
-				cellStyle: getCellStyle,
-			},
-			{
-				field: 'name.last',
-				headerName: 'Last Name',
-				filter: 'agTextColumnFilter',
-				cellStyle: getCellStyle,
-			},
-			{
-				field: 'email',
-				filter: 'agTextColumnFilter',
-				cellStyle: getCellStyle,
-				cellClass: 'font-mono text-sm',
-			},
-			{
-				field: 'phone',
-				filter: 'agTextColumnFilter',
-				cellStyle: getCellStyle,
-			},
-			{
-				field: 'dob.age',
-				headerName: 'Age',
-				filter: 'agNumberColumnFilter',
-				cellStyle: (params) => {
-					if (params.value < 30)
-						return { backgroundColor: '#e8f5e9', color: '#2e7d32' };
-					if (params.value > 60)
-						return { backgroundColor: '#fff3e0', color: '#e65100' };
-					return { backgroundColor: '#e3f2fd', color: '#1565c0' };
-				},
-			},
-			{
-				field: 'dob.date',
-				headerName: 'DOB',
-				filter: 'agDateColumnFilter',
-				valueFormatter: (p) => new Date(p.value).toLocaleDateString(),
-				cellStyle: getCellStyle,
-			},
-			{
-				field: 'location.city',
-				headerName: 'City',
-				filter: 'agSetColumnFilter',
-				cellStyle: getCellStyle,
-			},
-			{
-				field: 'gender',
-				filter: 'agSetColumnFilter',
-				cellStyle: (params) => {
-					return params.value === 'female'
-						? {
-								backgroundColor: '#fce4ec',
-								color: '#c2185b',
-								fontWeight: 'bold',
-							}
-						: {
-								backgroundColor: '#e3f2fd',
-								color: '#1976d2',
-								fontWeight: 'bold',
-							};
-				},
-			},
-			{
-				field: 'picture.thumbnail',
-				headerName: 'Picture',
-				cellRenderer: (params: ICellRendererParams<UserProps>) => {
-					if (!params.value) return null;
-
-					return (
-						<img
-							src={params.value as string}
-							alt="User"
-							style={{
-								width: 40,
-								height: 40,
-								borderRadius: '50%',
-								objectFit: 'cover',
-							}}
-						/>
-					);
-				},
-				filter: false,
-			},
-		];
-	}, [data]);
-
-	const defaultColDef: ColDef = useMemo(
+	const defaultColDef: ColDef<User> = useMemo(
 		() => ({
 			sortable: true,
 			resizable: true,
@@ -123,6 +31,14 @@ const AgGridDemo = () => {
 		return (
 			<div className="flex items-center justify-center h-96">
 				<div className="text-lg text-gray-600">Loading AG Grid data...</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		return (
+			<div className="flex items-center justify-center h-96" role="alert">
+				<div className="text-lg text-red-700">{error}</div>
 			</div>
 		);
 	}
@@ -153,10 +69,10 @@ const AgGridDemo = () => {
 					Remove Filters
 				</button>
 			</div>
-			<div className="ag-theme-quartz" style={{ height: 550, width: '100%' }}>
-				<AgGridReact
-					rowData={data}
-					columnDefs={columnDefs}
+			<div className="ag-theme-quartz" style={GRID_CONTAINER_STYLE}>
+				<AgGridReact<User>
+					rowData={rowData}
+					columnDefs={USER_COLUMN_DEFS}
 					getRowStyle={getRowStyle}
 					defaultColDef={defaultColDef}
 					pagination={true}

@@ -1,4 +1,4 @@
-import AgGridDemo from './../features/aggrid/components/AgGridDemo';
+import AgGridDemo from '../features/aggrid/components/AgGridDemo';
 
 function App() {
 	return (
