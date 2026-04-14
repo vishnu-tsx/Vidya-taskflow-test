@@ -1,75 +1,80 @@
-import { screen, waitFor } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { mockUsers } from '../testFixtures';
 import {
-	checkColumnCount,
-	checkFiltersEnabled,
-	checkGridLoaded,
-	renderComponent,
-} from '../../../utils/testUtils';
+	getAriaColumnCount,
+	getGridElement,
+	getRenderedRowCount,
+	hasFloatingFilters,
+} from '../testUtils';
 import AgGridDemo from './AgGridDemo';
 
+const fetchUsersMock = vi.fn();
+
 vi.mock('../services/apiService', () => ({
-	fetchUsers: vi.fn(() =>
-		Promise.resolve([
-			{
-				gender: 'male',
-				name: { first: 'John', last: 'Doe' },
-				email: 'john@example.com',
-				phone: '123-456-7890',
-				dob: { date: '1990-01-01', age: 34 },
-				location: { city: 'New York' },
-				picture: { thumbnail: 'https://example.com/pic.jpg' },
-			},
-			{
-				gender: 'female',
-				name: { first: 'Jane', last: 'Smith' },
-				email: 'jane@example.com',
-				phone: '098-765-4321',
-				dob: { date: '1985-05-15', age: 39 },
-				location: { city: 'Los Angeles' },
-				picture: { thumbnail: 'https://example.com/pic2.jpg' },
-			},
-		])
-	),
+	fetchUsers: (...args: unknown[]) => fetchUsersMock(...args),
 }));
 
+const renderGrid = async () => {
+	render(<AgGridDemo />);
+	const grid = getGridElement(await screen.findAllByRole('grid'));
+	await waitFor(() => expect(getRenderedRowCount(grid)).toBeGreaterThan(0));
+	return grid;
+};
+
 describe('AgGridDemo', () => {
-	it('renders AG Grid', async () => {
-		renderComponent(<AgGridDemo />);
-
-		const grids = await screen.findAllByRole('grid');
-		expect(grids.length).toBeGreaterThan(0);
-	});
-
-	it('loads data into the grid', async () => {
-		renderComponent(<AgGridDemo />);
-
-		const grid = (await screen.findAllByRole('grid'))[0];
-
-		await waitFor(() => {
-			expect(checkGridLoaded(grid)).toBe(true);
-		});
+	beforeEach(() => {
+		fetchUsersMock.mockReset();
+		fetchUsersMock.mockResolvedValue(mockUsers);
 	});
 
 	it('shows loading state initially', () => {
-		renderComponent(<AgGridDemo />);
-
+		fetchUsersMock.mockReturnValue(new Promise(() => {}));
+		render(<AgGridDemo />);
 		expect(screen.getByText(/loading ag grid data/i)).toBeInTheDocument();
 	});
 
-	it('renders correct number of columns', async () => {
-		renderComponent(<AgGridDemo />);
-
-		const grid = (await screen.findAllByRole('grid'))[0];
-
-		expect(checkColumnCount(grid, 9)).toBe(true);
+	it('renders user rows and expected columns after data loads', async () => {
+		const grid = await renderGrid();
+		expect(getAriaColumnCount(grid)).toBe(9);
+		for (const header of ['First Name', 'Last Name', 'Age', 'DOB', 'City']) {
+			expect(
+				screen.getByRole('columnheader', { name: new RegExp(header, 'i') })
+			).toBeInTheDocument();
+		}
+		expect(await screen.findByText('John')).toBeInTheDocument();
+		expect(await screen.findByText('Jane')).toBeInTheDocument();
+		expect(await screen.findByText('New York')).toBeInTheDocument();
 	});
 
-	it('enables column filters', async () => {
-		renderComponent(<AgGridDemo />);
+	it('toggles floating filters when clicking Remove/Show Filters', async () => {
+		const user = userEvent.setup();
+		const grid = await renderGrid();
+		const toolbar = within(
+			screen.getByRole('group', { name: 'Filter visibility' })
+		);
 
-		const grid = (await screen.findAllByRole('grid'))[0];
+		expect(hasFloatingFilters(grid)).toBe(true);
+		const removeBtn = toolbar.getByRole('button', { name: 'Remove Filters' });
+		const showBtn = toolbar.getByRole('button', { name: 'Show Filters' });
+		expect(removeBtn).toHaveAttribute('aria-pressed', 'false');
+		expect(showBtn).toHaveAttribute('aria-pressed', 'true');
 
-		expect(checkFiltersEnabled(grid)).toBe(true);
+		await user.click(removeBtn);
+		await waitFor(() => expect(hasFloatingFilters(grid)).toBe(false));
+		expect(removeBtn).toHaveAttribute('aria-pressed', 'true');
+		expect(showBtn).toHaveAttribute('aria-pressed', 'false');
+
+		await user.click(showBtn);
+		await waitFor(() => expect(hasFloatingFilters(grid)).toBe(true));
+		expect(showBtn).toHaveAttribute('aria-pressed', 'true');
+	});
+
+	it('renders an error state when fetchUsers rejects', async () => {
+		fetchUsersMock.mockRejectedValue(new Error('network down'));
+		render(<AgGridDemo />);
+		const alert = await screen.findByRole('alert');
+		expect(alert).toHaveTextContent(/network down/i);
 	});
 });

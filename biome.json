@@ -1,33 +1,38 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.3.13/schema.json",
 
-  "assist": {
-    "enabled": true
-  },
+	"assist": {
+		"enabled": true
+	},
 
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true,
-      "suspicious": {
-        "noExplicitAny": "warn"
-      }
-    }
-  },
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true,
+			"suspicious": {
+				"noExplicitAny": "warn"
+			}
+		}
+	},
 
-  "formatter": {
-    "enabled": true
-  },
+	"formatter": {
+		"enabled": true
+	},
 
-  "javascript": {
-    "formatter": {
-      "quoteStyle": "single",
-      "trailingCommas": "es5"
-    }
-  },
+	"javascript": {
+		"formatter": {
+			"quoteStyle": "single",
+			"trailingCommas": "es5"
+		}
+	},
 
-  "files": {
-    "includes": ["src/**/*.{js,ts,jsx,tsx}"],
-    "experimentalScannerIgnores": ["node_modules/**", "dist/**"]
-  }
+	"files": {
+		"includes": [
+			"src/**/*.{js,ts,jsx,tsx}",
+			"vite.config.ts",
+			"*.{js,ts,jsx,tsx,json}",
+			"!!**/node_modules",
+			"!!**/dist"
+		]
+	}
 }

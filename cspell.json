@@ -1,26 +1,28 @@
 {
-  "version": "0.2",
-  "language": "en",
-  "words": [
-    "taskflow",
-    "aggrid",
-    "quartz",
-    "cellvalue",
-    "getbyrole",
-    "colcount",
-    "xlink",
-    "iconify"
-  ],
-  "ignorePaths": [
-    "node_modules/**",
-    "dist/**",
-    "package-lock.json",
-    "**/*.svg"
-  ],
-  "overrides": [
-    {
-      "filename": "**/*.{ts,tsx}",
-      "languageId": "typescript"
-    }
-  ]
+	"version": "0.2",
+	"language": "en",
+	"words": [
+		"taskflow",
+		"aggrid",
+		"quartz",
+		"cellvalue",
+		"getbyrole",
+		"colcount",
+		"xlink",
+		"iconify",
+		"randomuser",
+		"jsdom"
+	],
+	"ignorePaths": [
+		"node_modules/**",
+		"dist/**",
+		"package-lock.json",
+		"**/*.svg"
+	],
+	"overrides": [
+		{
+			"filename": "**/*.{ts,tsx}",
+			"languageId": "typescript"
+		}
+	]
 }
